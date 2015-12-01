@@ -3,6 +3,7 @@ using SteamWebAPI2.Models.SteamPlayer;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SteamWebAPI2.Interfaces
@@ -27,6 +28,20 @@ namespace SteamWebAPI2.Interfaces
             {
                 return null;
             }
+        }
+
+        public async Task<IEnumerable<PlayerSummary>> GetPlayerSummaryAsync(IEnumerable<long> steamIds)
+        {
+            string steamIdsCsv = string.Join(",", steamIds.Select(l => l.ToString()));
+            List <SteamWebRequestParameter> parameters = new List<SteamWebRequestParameter>();
+            AddToParametersIfHasValue(steamIdsCsv, "steamids", parameters);
+            var playerSummary = await CallMethodAsync<PlayerSummaryResultContainer>("GetPlayerSummaries", 2, parameters);
+
+            if (playerSummary.Result.Players.Count > 0)
+            {
+                return playerSummary.Result.Players;
+            }
+            return null;
         }
 
         public async Task<IReadOnlyCollection<Friend>> GetFriendsListAsync(long steamId, string relationship = "")
